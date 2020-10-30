@@ -1,10 +1,12 @@
 "use strict";
 
-const fs = require("fs");
+const fs = require('fs');
 const readlineSync = require('readline-sync');
-const { compileFunction } = require("vm");
+const compileFunction = require('vm');
+const path = require('path');
+const dir = require('console');
 
-function stringsEvenLengthInput(fileName) {  // Exersise 1
+const stringsEvenLengthInput = (fileName) => {  // Exersise 1
     let n; 
     let string;
     let stringArray = [];
@@ -22,7 +24,7 @@ function stringsEvenLengthInput(fileName) {  // Exersise 1
     fs.writeFileSync(fileName, jsonStringArray);
 }
 
-function stringsVowelsOutput(fileName) {  // Exersise 2
+const stringsVowelsOutput = (fileName) => {  // Exersise 2
     let stringArray = [];
     let vowels = "aeiou";
 
@@ -42,7 +44,7 @@ function stringsVowelsOutput(fileName) {  // Exersise 2
     }
 }
 
-function fileContentWithRigthExtension() {  // Exersise 3
+const fileContentWithRigthExtension = () => {  // Exersise 3
     const folderName = readlineSync.question("Input folder name: ");
     const extensionName = readlineSync.question("Input extension name (without .): ");
 
@@ -57,39 +59,19 @@ function fileContentWithRigthExtension() {  // Exersise 3
     });
 }
 
-function filePathShorten(filePath) {  // Exersise 4
-    let filePathArray = filePath.split('/');
-    filePath = filePath.slice(0, filePath.length - filePathArray[filePathArray.length - 1].length - 1);
-    return filePath;
+const filesOutputByPath = (dirPath) => {  // Exersise 4
+    fs.readdirSync(dirPath).forEach(function(file) {
+        let filepath = path.join(dirPath, file);
+        let stat = fs.statSync(filepath);
+        if (stat.isDirectory()) {            
+            filesOutputByPath(filepath);
+        } else {
+            (fs.readFileSync(filepath).length <= 10) ? console.log(`\n${filepath} \n${fs.readFileSync(filepath)}`) : null;                     
+        }
+    });
 }
 
-function filesOutputByPath(filePath) {  // Exersise 4
-    let fileContent;
-
-    while (filePath !== '') {
-        console.log('\n');
-        console.log(filePath);
-        const filesArray = fs.readdirSync(filePath);
-        console.log(filesArray);
-        filesArray.forEach(fileName => {  
-            if (fileName.split('.')[1] === "txt") {
-                fileContent = fs.readFileSync(fileName, "utf8");
-                if (fileContent.length <= 1000) {
-                    console.log('\n');
-                    console.log(fileName);
-                    console.log(fileContent);
-                }
-            }
-            //else if (fileName.indexOf('.') < 0) {
-            //    filesOutputByPath
-            //}
-        });
-
-        filePath = filePathShorten(filePath);
-    }
-}
-
-function combineFilesByNames() {  // Exersise 5
+const combineFilesByNames = () => {  // Exersise 5
     let n; 
     let fileName;
     let filesContentArray = [];
@@ -110,7 +92,7 @@ function combineFilesByNames() {  // Exersise 5
     fs.writeFileSync("combine.txt", filesContentCombined);
 }
 
-function findMaxNestingLevel() {  // Exersise 6
+const findMaxAvailableNestingLevel = () => {  // Exersise 6
     let jsonString;
     let objString = '{"k":""}';
     let flag = true;
@@ -138,73 +120,68 @@ function findMaxNestingLevel() {  // Exersise 6
     }
 }
 
-function getNestingLevel(object, nestingLevelsNumber) {
-    console.log('Object:', object);
-    nestingLevelsNumber.levelNumber++;
-    console.log('Nesting level -', nestingLevelsNumber.levelNumber);
+function findObjectMaxNestingLevel(obj) {
+    let arr = [];
+    let maxVal = 0;
+    let finalObj;
+    getProp(obj, 0, arr);
 
-    for (var objectProp in object) {
-        if (typeof(object[objectProp]) === 'object') {
-            getNestingLevel(object[objectProp], nestingLevelsNumber);
-        } else {
-            console.log('Value: ' + object[objectProp]);
+    function getProp(o, id, stack) {
+
+        for (const prop in o) {
+            if (typeof(o[prop]) === 'object') {
+                let clone = stack.slice();
+                clone.push(prop);
+                getProp(o[prop], id + 1, clone);
+            }
+
+            if (id > maxVal) {
+                maxVal = id
+                finalObj = stack
+                finalObj.push(prop)
+            }
         }
     }
-
-    //return nestingLevelsNumber;
+    console.log(maxVal, finalObj)
 }
 
-function getMaxNestingLevel(fileName) {
-    getMaxNestingLevel.nestingLevelsNumber = 0;
-    
-    let objectExample = {
-        a1: {
-            b1: {
-                c: 1
-            },
-            b2: {
-                c: 222
-            },
-            b3: {
-                c: {
-                    d: 33,
-                    e: 2.5,
-                    f: {
-                        g: 9999,
-                        h: {
-                            i: {
-                                j: 1001,
-                                k: 'string',
-                                l: [1,2,3],
-                            }
+
+
+const fileName = "data.txt";
+const filePath = "/Users/temasarkisov/Uni/BMSTU/BMSTU-EVM/lab03/example04";
+
+const objectExample = {
+    a1: {
+        b1: {
+            c: 1
+        },
+        b2: {
+            c: 222
+        },
+        b3: {
+            c: {
+                d: 33,
+                e: 2.5,
+                f: {
+                    g: 9999,
+                    h: {
+                        i: {
+                            j: 1001,
+                            k: 'string',
+                            l: [1,2,3],
                         }
                     }
                 }
             }
         }
     }
-    
-    const objString = JSON.stringify(objectExample);
-    //const objString = fs.readFileSync(fileName, "utf8");
-    const obj = JSON.parse(objString);
-
-    let nestingLevelsNumber = {levelNumber: -1};
-    getNestingLevel(obj, nestingLevelsNumber);
-    return nestingLevelsNumber.levelNumber;
 }
 
-
-
-
-
-
-const fileName = "data.txt";
-const filePath = "/Users/temasarkisov/My/BMSTU/BMSTU-EVM/lab03";
-
-//stringsEvenLengthInput(fileName);
-//stringsVowelsOutput(fileName);
-//fileContentWithRigthExtension();
-//filesOutputByPath(filePath);
-//combineFilesByNames();
-//findMaxNestingLevel();
+stringsEvenLengthInput(fileName);
+stringsVowelsOutput(fileName);
+fileContentWithRigthExtension();
+filesOutputByPath(filePath);
+combineFilesByNames();
+findMaxAvailableNestingLevel();
 console.log(getMaxNestingLevel(fileName));
+findObjectMaxNestingLevel(objectExample);
