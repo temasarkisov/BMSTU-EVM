@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Страница A</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>  
+    <p>Введите почту</p>
+    <input id="mail" name="mail" spellcheck="false" autocomplete="off">
+    <p>Введите фамилию</p>
+    <input id="surname" name="surname" spellcheck="false" autocomplete="off">
+    <p>Введите телефон</p>
+    <input id="phoneNumber" name="phoneNumber" spellcheck="false" autocomplete="off">
+    <br>
+    <br>
+    <button onclick="makeAction()">Отправить</button>
+
+    <script>
+        "use strict";
+
+        function ajaxPost(urlString, bodyString, callback) {
+            let r = new XMLHttpRequest();
+            r.open("POST", urlString, true);
+            r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            console.log(bodyString);
+            r.send(bodyString);
+            r.onload = function() {
+                callback(r.response);
+            }
+        }
+
+        function makeAction() {
+            let mail = document.getElementById('mail').value;
+            let surname = document.getElementById('surname').value;
+            let phoneNumber = document.getElementById('phoneNumber').value;
+
+            ajaxPost("/save/info", JSON.stringify({
+                mail, surname, phoneNumber
+            }), function(answerString) {
+                const answerObject = JSON.parse(answerString);
+                const result = answerObject.result;
+                alert(result);
+            });
+        }
+    </script>
+</body>
+</html>
